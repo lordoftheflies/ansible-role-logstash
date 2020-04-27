@@ -1,0 +1,4 @@
+---
+# roles/logstash/vars/debian.yml
+
+logstash_package_extension: 'rpm'

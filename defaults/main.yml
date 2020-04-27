@@ -1,0 +1,237 @@
+---
+# roles/logstash/defaults/main.yml
+
+logstash_debug: false
+
+logstash_controller_user: '{{ project_controller_user }}'
+logstash_controller_home: '{{ project_controller_home }}'
+logstash_controller_resources_root: '{{ project_controller_resources_home }}'
+
+logstash_deployment_user: '{{ project_deployment_user }}'
+logstash_deployment_home: '{{ project_deployment_home }}'
+logstash_deployment_resources_root: '{{ project_deployment_resources_home }}'
+
+## atomic versioning example
+#
+# logstash_major: '0'
+# logstash_moderate_revision: '0'
+# logstash_minor_revision: '1'
+# logstash_build: ''
+
+## Package #
+
+logstash_package_state: 'present'
+logstash_package_version: '2.0.1'
+logstash_package_filename: "vagrant_{{ logstash_package_version }}_i686.deb"
+
+logstash_controller_resources_dir: '{{ logstash_controller_resources_root }}/sw/vagrant/debs'
+logstash_deployment_resources_dir: '{{ logstash_deployment_resources_root }}/vagrant/debs'
+
+# /tests/sw/{{ ansible_distribution| lower }}/{{ ansible_distribution_version }}/miniconda'
+
+# Help file
+
+logstash_acemenu_help_file_template_path: '{{ fact_role_path }}/templates/bin/acemenu/help/example_aceadmin_helpfile.md.j2'
+
+# Resources
+
+logstash_package_url: "https://releases.hashicorp.com/vagrant/2.0.1/vagrant_2.0.1_i686.deb"
+# logstash_checksum_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS"
+# logstash_checksum_sig_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS.sig"
+
+## links
+
+logstash_default_link_force: true
+
+########################################
+
+# Resources
+
+logstash_resources_on_local:
+
+  logstash_local_directories:
+
+    state: 'directory'
+    path: '{{ logstash_controller_resources_dir }}'
+    owner: '{{ logstash_controller_user }}'
+    group: '{{ logstash_controller_user }}'
+    mode: '0755'
+
+  logstash_local_clones:
+
+    become: ''
+    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
+    dest: '{{ logstash_controller_resources_dir }}/acemenu'
+    mode: '0700'
+    clone: true
+
+  logstash_local_downloads:
+
+    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
+    dest: '{{ logstash_controller_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
+    owner: '{{ logstash_controller_user }}'
+    group: '{{ logstash_controller_user }}'
+    mode: '0700'
+    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
+    resource_type: 'url'
+
+  logstash_local_file_copies:
+
+    state: "copy"
+    src: './files/example_playbook.yml'
+    dest: '{{ logstash_controller_resources_dir }}/copy_test.yml'
+    owner: '{{ logstash_controller_user }}'
+    group: '{{ logstash_controller_user }}'
+    mode: '0700'
+
+  logstash_local_file_touches:
+
+    state: 'touch'
+    path: '{{ logstash_controller_resources_dir }}/copy_test.yml'
+    owner: '{{ logstash_controller_user }}'
+    group: '{{ logstash_controller_user }}'
+    mode: '0770'
+
+  logstash_local_templated_files:
+
+
+    state: 'template'
+    src: './templates/template_test.md.j2'
+    dest: '{{ logstash_controller_resources_dir }}/test.md'
+    owner: '{{ logstash_controller_user }}'
+    group: '{{ logstash_controller_user }}'
+    mode: '0700'
+
+  logstash_local_blocksinfile:
+
+    type: 'blockinfile'
+    path: '{{ logstash_controller_resources_dir }}/test.md'
+    owner: '{{ logstash_controller_user }}'
+    group: '{{ logstash_controller_user }}'
+    mode: '0700'
+    insertafter: "EOF"
+    block: |
+      # if running bash
+      if [ -n "$BASH_VERSION" ]; then
+          # include /opt/display/bin/display if it exists
+          if [ -f "/opt/display/bin/display" ]; then
+              PATH="/opt/display/bin:$PATH"
+
+       	. "/opt/display/bin/"
+          fi
+      fi
+    state: "present"
+
+  logstash_local_standard_sym_links:
+
+    state: "link"
+    src: '{{ logstash_controller_resources_dir }}/test.md'
+    dest: '{{ logstash_controller_resources_dir }}/my_local_link'
+    owner: '{{ logstash_controller_user }}'
+    group: '{{ logstash_controller_user }}'
+    mode: '0700'
+    force: '{{ logstash_default_link_force }}'
+
+  logstash_local_relative_sym_links:
+
+    link_name: 'relative_link'
+    link_target: 'test.md'
+    link_dir: '{{ logstash_controller_resources_dir }}'
+    state: 'relative_link'
+#    owner: '{{ logstash_controller_user }}'
+#    group: '{{ logstash_controller_user }}'
+#    mode: '0700'
+
+logstash_resources_on_remote:
+
+  logstash_remote_directories:
+
+    state: 'directory'
+    path: '{{ logstash_deployment_resources_dir }}'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0755'
+
+  logstash_remote_clones:
+
+    become: true
+    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
+    dest: '{{ logstash_deployment_resources_dir }}/acemenu'
+    mode: '0700'
+    clone: true
+
+  logstash_remote_downloads:
+
+    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
+    dest: '{{ logstash_deployment_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0700'
+    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
+    resource_type: 'url'
+
+  logstash_remote_file_copies:
+
+    state: "copy"
+    src: './files/example_playbook.yml'
+    dest: '{{ logstash_deployment_resources_dir }}/copy_test.yml'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0700'
+
+  logstash_remote_file_touches:
+
+    state: 'touch'
+    path: '{{ logstash_deployment_resources_dir }}/copy_test.yml'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0770'
+
+  logstash_remote_templates_files:
+
+    state: 'template'
+    src: './templates/template_test.md.j2'
+    dest: '{{ logstash_deployment_resources_dir }}/test.md'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0700'
+
+  logstash_remote_blocksinfile:
+
+    type: 'blockinfile'
+    path: '{{ logstash_deployment_resources_dir }}/test.md'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0700'
+    insertafter: "EOF"
+    block: |
+      # if running bash
+      if [ -n "$BASH_VERSION" ]; then
+          # include /opt/display/bin/display if it exists
+          if [ -f "/opt/display/bin/display" ]; then
+              PATH="/opt/display/bin:$PATH"
+
+       	. "/opt/display/bin/"
+          fi
+      fi
+    state: "present"
+
+  logstash_remote_standard_sym_links:
+
+    state: 'link'
+    src: '{{ logstash_deployment_resources_dir }}/test.md'
+    dest: '{{ logstash_deployment_resources_dir }}/my_remote_link'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0700'
+    force: '{{ logstash_default_link_force }}'
+
+  logstash_remote_relative_sym_links:
+
+    state: 'relative_link'
+    link_dir: '{{ logstash_deployment_resources_dir }}'
+    link_name: 'my_relative_link'
+    link_target: 'test.md'
+    owner: '{{ logstash_deployment_user }}'
+    group: '{{ logstash_deployment_user }}'
+    mode: '0700'

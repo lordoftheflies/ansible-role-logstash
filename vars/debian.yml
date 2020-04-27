@@ -1,0 +1,5 @@
+---
+# roles/logstash/vars/debian.yml
+
+# Debian specific vars
+logstash_package_extension: 'deb'

@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    - logstash_deployment_users_home: /root
+    - logstash_testing_provider: lxd
+
+  roles:
+    - logstash
